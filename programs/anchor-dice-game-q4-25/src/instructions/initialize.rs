@@ -5,7 +5,6 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub house: Signer<'info>,
     #[account(
-        mut,
         seeds = [b"vault", house.key().as_ref()],
         bump
     )]
