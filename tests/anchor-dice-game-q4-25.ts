@@ -10,7 +10,7 @@ describe("soldice-anchor", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.AnchorDice2024 as Program<AnchorDiceGameQ425>;
+  const program = anchor.workspace.AnchorDiceGameQ425 as Program<AnchorDiceGameQ425>;
 
   const MSG = Uint8Array.from(Buffer.from("1337", "hex"));
   let house = new Keypair();
@@ -61,10 +61,16 @@ describe("soldice-anchor", () => {
     .signers([
       player
     ])
-    .rpc();
+    .rpc()
+    .then(async () => {
+      const betAccount = await program.account.bet.fetch(bet);
+      expect(betAccount.player === player.publicKey, "Player should be bet creator");
+    })
+    .catch((e) => {
+      console.log(e);
+      throw Error('Expected to work');
+    });
 
-    const betAccount = await program.account.bet.fetch(bet);
-    expect(betAccount.player === player.publicKey, "Player should be bet creator");
   });
 
   it("Resolve a bet", async () => {
@@ -85,7 +91,7 @@ describe("soldice-anchor", () => {
       }
     )
     .signers([
-      house
+      player
     ])
     .instruction();
 
@@ -95,7 +101,7 @@ describe("soldice-anchor", () => {
       await sendAndConfirmTransaction(
         program.provider.connection,
         tx,
-        [house]
+        [player, house]
       );
     } catch (error) {
       console.error(error);
